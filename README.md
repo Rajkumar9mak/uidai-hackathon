@@ -51,6 +51,33 @@ ASSI is designed as a **transparent, explainable, and policy-safe** indicator.
 
 ---
 
+## 🎯 Policy Impact Analysis (High-ROI Intervention Zones)
+
+Beyond identifying service stress, this project evaluates **where policy
+interventions will deliver the maximum operational benefit**.
+
+### Approach
+- Regions are ranked by **ASSI (Aadhaar Service Stress Index)**
+- Enrolment volume is used as a proxy for infrastructure sensitivity
+- High-stress regions with **low enrolment capacity** are flagged as
+  **high-return intervention zones**
+
+### Key Insight
+> Regions with high ASSI but relatively low enrolment volumes are most
+> responsive to marginal capacity increases (e.g., temporary centres,
+> mobile enrolment vans).
+
+### Decision Value
+This analysis helps policymakers answer:
+- *Where should new enrolment centers be deployed first?*
+- *Which regions will benefit most from short-term interventions?*
+
+### Dashboard Integration
+The dashboard includes a **What-If Policy Simulator** that demonstrates
+how adding limited resources can significantly reduce service stress
+in prioritized regions.
+
+
 ## 🖥️ Dashboard Features
 
 - 📈 **National KPIs** (ASSI, bottleneck risk)
