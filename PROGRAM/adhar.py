@@ -304,6 +304,58 @@ plt.ylabel("ASSI (0–100)")
 plt.show()
 
 
+# -------------------------------
+# STEP 10.5: UPDATE QUALITY & SYSTEM FRICTION ANALYSIS
+# -------------------------------
+
+# Friction ratio: updates per enrolment
+lifecycle["friction_ratio"] = (
+    lifecycle["total_updates"] / lifecycle["enrolment_count"]
+)
+
+# Normalize friction score (0–100)
+lifecycle["friction_score"] = (
+    (lifecycle["friction_ratio"] - lifecycle["friction_ratio"].min()) /
+    (lifecycle["friction_ratio"].max() - lifecycle["friction_ratio"].min())
+) * 100
+
+lifecycle["friction_score"] = lifecycle["friction_score"].round(1)
+
+# Classify friction level
+def friction_level(x):
+    if x < 30:
+        return "Low Friction"
+    elif x < 60:
+        return "Moderate Friction"
+    else:
+        return "High Friction"
+
+lifecycle["friction_level"] = lifecycle["friction_score"].apply(friction_level)
+
+print("\nUpdate Quality & System Friction Analysis:")
+print(
+    lifecycle[[
+        "friction_ratio",
+        "friction_score",
+        "friction_level"
+    ]]
+    .sort_values("friction_score", ascending=False)
+    .head(10)
+)
+
+# Optional visualization
+lifecycle.sort_values("friction_score", ascending=False).head(10)[
+    "friction_score"
+].plot(
+    kind="bar",
+    figsize=(10,5),
+    title="Top States by Aadhaar Update Friction Score"
+)
+
+plt.ylabel("Friction Score (0–100)")
+plt.show()
+
+
 
 
 # -------------------------------

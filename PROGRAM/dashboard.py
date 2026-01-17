@@ -96,6 +96,90 @@ else:
 st.dataframe(view[["state", "assi", "bottleneck_risk"]])
 
 
+st.subheader("🔄 Update Quality & System Friction Analysis")
+c1, c2, c3 = st.columns(3)
+
+c1.metric(
+    "High Friction States",
+    df[df["friction_level"] == "High Friction"].shape[0]
+)
+
+c2.metric(
+    "Average Friction Score",
+    round(df["friction_score"].mean(), 1)
+)
+
+c3.metric(
+    "Maximum Friction Score",
+    round(df["friction_score"].max(), 1)
+)
+st.markdown("### 🚨 High Update Friction Regions")
+
+top_friction = df.sort_values(
+    "friction_score",
+    ascending=False
+).head(10)
+
+st.dataframe(
+    top_friction[
+        [
+            "state",
+            "friction_score",
+            "friction_level",
+            "recommended_action"
+        ]
+    ]
+)
+st.markdown("### 📊 Update Friction Score (Top 10 States)")
+
+fig, ax = plt.subplots(figsize=(8,4))
+
+top_friction.set_index("state")["friction_score"].plot(
+    kind="bar",
+    ax=ax,
+    color="orange"
+)
+
+ax.set_ylabel("Friction Score (0–100)")
+ax.set_title("States with Highest Aadhaar Update Friction")
+
+st.pyplot(fig)
+st.subheader("⚠️ Combined Risk Matrix (ASSI × Friction)")
+
+fig2, ax2 = plt.subplots(figsize=(7,5))
+
+ax2.scatter(
+    df["assi"],
+    df["friction_score"],
+    alpha=0.7
+)
+
+ax2.set_xlabel("ASSI (Service Stress)")
+ax2.set_ylabel("Friction Score (Update Quality)")
+ax2.set_title("Service Stress vs Update Friction")
+
+# Reference lines
+ax2.axvline(60, linestyle="--")
+ax2.axhline(60, linestyle="--")
+
+st.pyplot(fig2)
+st.markdown("### 🔍 State-wise Friction Details")
+
+state_f = st.selectbox(
+    "Select State (Friction Analysis)",
+    df["state"].unique(),
+    key="state_friction_selector"
+)
+
+row = df[df["state"] == state_f]
+
+st.write(row[[
+    "friction_ratio",
+    "friction_score",
+    "friction_level"
+]])
+
+
 
 
 # --------------------------------
