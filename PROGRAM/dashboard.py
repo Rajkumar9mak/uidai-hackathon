@@ -61,123 +61,98 @@ st.pyplot(fig)
 
 
 
+# -------------------------------
+# ASSI WHAT-IF POLICY SIMULATOR
+# -------------------------------
+
 st.subheader("🎛 ASSI What-If Policy Simulator")
 
-state = st.selectbox("Select State", df["state"].unique())
-centers = st.slider("Add Temporary Enrollment Centers", 0, 10, 5)
-
-current_assi = df.loc[df["state"] == state, "assi"].values[0]
-
-# Conservative assumption: each center reduces ASSI by 2%
-new_assi = current_assi * (1 - centers * 0.02)
-
-c1, c2 = st.columns(2)
-c1.metric("Current ASSI", round(current_assi, 1))
-c2.metric("Post-Intervention ASSI", round(new_assi, 1))
-
-
-
-st.subheader("🔎 Filter by ASSI Level")
-
-assi_level = st.selectbox(
-    "Select Stress Level",
-    ["All", "Low (<30)", "Moderate (30–60)", "High (>60)"]
+# State selection (unique key to avoid Streamlit errors)
+state = st.selectbox(
+    "Select State",
+    df["state"].unique(),
+    key="assi_policy_state"
 )
 
-if assi_level == "Low (<30)":
-    view = df[df["assi"] < 30]
-elif assi_level == "Moderate (30–60)":
-    view = df[(df["assi"] >= 30) & (df["assi"] < 60)]
-elif assi_level == "High (>60)":
-    view = df[df["assi"] >= 60]
-else:
-    view = df
+# Slider for intervention simulation
+centers = st.slider(
+    "Add Temporary Enrollment Centers",
+    min_value=0,
+    max_value=10,
+    value=5,
+    step=1
+)
 
-st.dataframe(view[["state", "assi", "bottleneck_risk"]])
+# Fetch current ASSI
+current_assi = df.loc[df["state"] == state, "assi"].values[0]
 
+# Policy assumption: each center reduces ASSI by 2%
+new_assi = current_assi * (1 - centers * 0.02)
 
-st.subheader("🔄 Update Quality & System Friction Analysis")
-c1, c2, c3 = st.columns(3)
+# Display metrics
+c1, c2 = st.columns(2)
 
 c1.metric(
-    "High Friction States",
-    df[df["friction_level"] == "High Friction"].shape[0]
+    "Current ASSI",
+    round(current_assi, 1)
 )
 
 c2.metric(
-    "Average Friction Score",
-    round(df["friction_score"].mean(), 1)
+    "Post-Intervention ASSI",
+    round(new_assi, 1),
+    delta=round(new_assi - current_assi, 1)
 )
 
-c3.metric(
-    "Maximum Friction Score",
-    round(df["friction_score"].max(), 1)
+st.caption(
+    "Assumption: Each temporary enrollment center reduces ASSI by ~2% (illustrative policy simulation)."
 )
-st.markdown("### 🚨 High Update Friction Regions")
 
-top_friction = df.sort_values(
-    "friction_score",
-    ascending=False
-).head(10)
+
+
+
+
+
+
+if "ies_score" not in df.columns:
+    st.error("Intervention Efficiency data missing. Please re-run adhar.py.")
+    st.stop()
+
+
+
+
+
+st.subheader("🎯 Intervention Efficiency Analysis (High-ROI Zones)")
+
+top_ies = df.sort_values("ies_score", ascending=False).head(10)
 
 st.dataframe(
-    top_friction[
+    top_ies[
         [
             "state",
-            "friction_score",
-            "friction_level",
+            "assi",
+            "ies_score",
+            "intervention_priority",
             "recommended_action"
         ]
-    ]
+    ],
+    use_container_width=True
 )
-st.markdown("### 📊 Update Friction Score (Top 10 States)")
+
+
+
 
 fig, ax = plt.subplots(figsize=(8,4))
 
-top_friction.set_index("state")["friction_score"].plot(
+top_ies.set_index("state")["ies_score"].plot(
     kind="bar",
     ax=ax,
-    color="orange"
+    color="green"
 )
 
-ax.set_ylabel("Friction Score (0–100)")
-ax.set_title("States with Highest Aadhaar Update Friction")
+ax.set_ylabel("Intervention Efficiency Score (0–100)")
+ax.set_title("Top High-ROI Aadhaar Intervention Regions")
 
 st.pyplot(fig)
-st.subheader("⚠️ Combined Risk Matrix (ASSI × Friction)")
-
-fig2, ax2 = plt.subplots(figsize=(7,5))
-
-ax2.scatter(
-    df["assi"],
-    df["friction_score"],
-    alpha=0.7
-)
-
-ax2.set_xlabel("ASSI (Service Stress)")
-ax2.set_ylabel("Friction Score (Update Quality)")
-ax2.set_title("Service Stress vs Update Friction")
-
-# Reference lines
-ax2.axvline(60, linestyle="--")
-ax2.axhline(60, linestyle="--")
-
-st.pyplot(fig2)
-st.markdown("### 🔍 State-wise Friction Details")
-
-state_f = st.selectbox(
-    "Select State (Friction Analysis)",
-    df["state"].unique(),
-    key="state_friction_selector"
-)
-
-row = df[df["state"] == state_f]
-
-st.write(row[[
-    "friction_ratio",
-    "friction_score",
-    "friction_level"
-]])
 
 
 

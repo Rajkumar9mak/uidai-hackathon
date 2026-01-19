@@ -359,13 +359,59 @@ plt.show()
 
 
 # -------------------------------
+# STEP 10.6: INTERVENTION EFFICIENCY SCORE (IES)
+# -------------------------------
+
+# Avoid division by zero
+lifecycle["enrolment_capacity_proxy"] = lifecycle["enrolment_count"].replace(0, 1)
+
+# Compute raw IES
+lifecycle["ies_raw"] = (
+    lifecycle["assi"] / lifecycle["enrolment_capacity_proxy"]
+)
+
+
+# Normalize IES to 0–100 scale
+lifecycle["ies_score"] = (
+    (lifecycle["ies_raw"] - lifecycle["ies_raw"].min()) /
+    (lifecycle["ies_raw"].max() - lifecycle["ies_raw"].min())
+) * 100
+
+lifecycle["ies_score"] = lifecycle["ies_score"].round(1)
+
+
+def intervention_priority(x):
+    if x >= 70:
+        return "🔥 High ROI Intervention Zone"
+    elif x >= 40:
+        return "⚠️ Medium ROI Zone"
+    else:
+        return "Low ROI Zone"
+
+lifecycle["intervention_priority"] = lifecycle["ies_score"].apply(intervention_priority)
+
+
+print("\nTop Intervention Efficiency Regions:")
+print(
+    lifecycle[
+        ["assi", "enrolment_count", "ies_score", "intervention_priority"]
+    ]
+    .sort_values("ies_score", ascending=False)
+    .head(10)
+)
+print("DEBUG — Columns before export:")
+print(lifecycle.columns.tolist())
+
+lifecycle.to_csv("aadhaar_bottleneck_prediction.csv")
+
+# -------------------------------
 # STEP 11
 # -------------------------------
 
 
 
 
-lifecycle.to_csv("aadhaar_bottleneck_prediction.csv")
+# lifecycle.to_csv("aadhaar_bottleneck_prediction.csv")
 print("\nFinal bottleneck prediction data exported.")
 
 
@@ -571,6 +617,10 @@ ax.set_title(
 )
 ax.axis("off")
 plt.show()
+
+
+
+
 
 
 
